@@ -1,0 +1,243 @@
+// ╔══════════════════════════════════════════════════════════════════╗
+// ║                     ER DIAGRAM — DBML                           ║
+// ╚══════════════════════════════════════════════════════════════════╝
+//
+// 📌 ЩО ПОТРІБНО ЗРОБИТИ
+// ──────────────────────────────────────────────────────────────────
+//  1. Побудуйте ER-діаграму вашої бази даних у будь-якому зручному
+//     інструменті — dbdiagram.io, draw.io, Lucidchart тощо.
+//
+//  2. Додайте зображення вашої фінальної ER-діаграми (можна вставити як посилання на зображення в інтернеті та обов'язково закомітити файл з діаграмою в репозиторій).
+//
+//  Посилання на ER-діаграму: ./er-diagram.png
+//
+//  2. Кожен учасник команди підписує таблиці, які він створював:
+//
+//     Руслан — Всі таблиці
+//
+//  4. У цьому файлі додайте DBML-код вашої схеми.
+//     Якщо використовуєте dbdiagram.io — там є кнопка експорту в DBML.
+//     Якщо draw.io або інший інструмент — скопіюйте схему вручну.
+//
+// ──────────────────────────────────────────────────────────────────
+// 💡 ПІДКАЗКА
+//
+//  DBML виглядає ось так (це лише приклад — не копіюйте):
+//
+//  Table users {
+//    id       bigint [primary key, increment]
+//    username varchar(100) [not null]
+//  }
+//
+//  Ref: posts.user_id > users.id
+//
+//  Повна документація: https://dbml.dbdiagram.io/docs/
+// ══════════════════════════════════════════════════════════════════
+
+
+// Вставте ваш DBML-код нижче 👇
+// ======================================================
+// MEMBERS
+// ======================================================
+
+Table Memberships {
+  membership_id INTEGER [pk]
+  type_membership VARCHAR(15)
+  price_membership NUMERIC(4)
+}
+
+Table Members {
+  member_id UUID [pk]
+  first_name VARCHAR(15)
+  last_name VARCHAR(25)
+  phone_number VARCHAR(20)
+  date_registration TIMESTAMP [not null]
+}
+
+Table Subscriptions {
+  subscription_id INTEGER [pk]
+
+  member_id UUID
+  membership_id INTEGER
+
+  start_date DATE [not null]
+  end_date DATE [not null]
+}
+
+Ref: Subscriptions.member_id > Members.member_id
+Ref: Subscriptions.membership_id > Memberships.membership_id
+
+
+Table Attendances {
+  attendance_id BIGINT [pk]
+
+  member_id UUID
+
+  check_in_datetime TIMESTAMP [not null]
+  check_out_datetime TIMESTAMP [not null]
+}
+
+Ref: Attendances.member_id > Members.member_id
+
+
+Table Progress {
+  progress_id INTEGER [pk]
+
+  member_id UUID
+
+  fitness_goals VARCHAR(200) [not null]
+  progress_metrics VARCHAR(150)
+  goal_achievement_date DATE
+}
+
+Ref: Progress.member_id > Members.member_id
+
+
+// ======================================================
+// PERSONAL TRAINING
+// ======================================================
+
+Table PersonalTrainingSessions {
+
+  member_id UUID
+  trainer_id INTEGER
+
+  start_datetime TIMESTAMP [not null]
+  end_datetime TIMESTAMP [not null]
+
+  indexes {
+    (member_id, trainer_id, start_datetime) [pk]
+  }
+}
+
+Ref: PersonalTrainingSessions.member_id > Members.member_id
+Ref: PersonalTrainingSessions.trainer_id > Trainers.trainer_id
+
+
+Table Locations {
+
+  member_id UUID
+  room_id INTEGER
+
+  start_datetime TIMESTAMP [not null]
+  end_datetime TIMESTAMP
+
+  indexes {
+    (member_id, room_id, start_datetime) [pk]
+  }
+}
+
+Ref: Locations.member_id > Members.member_id
+Ref: Locations.room_id > Rooms.room_id
+
+
+// ======================================================
+// SCHEDULE
+// ======================================================
+
+Table Rooms {
+  room_id INTEGER [pk]
+  name_room VARCHAR(100)
+  capacity SMALLINT
+}
+
+Table Classes {
+  class_id INTEGER [pk]
+  name_class VARCHAR(100)
+}
+
+Table Schedule {
+  schedule_id INTEGER [pk]
+
+  room_id INTEGER
+  class_id INTEGER
+  trainer_id INTEGER
+
+  date_schedule DATE
+  day_of_week SMALLINT [not null, note: '1..7']
+
+  start_time TIME [not null]
+  end_time TIME
+
+  Note: '''
+  CHECK (day_of_week BETWEEN 1 AND 7)
+  '''
+}
+
+Ref: Schedule.room_id > Rooms.room_id
+Ref: Schedule.class_id > Classes.class_id
+Ref: Schedule.trainer_id > Trainers.trainer_id
+
+
+Table ClassRegistrations {
+
+  schedule_id INTEGER
+  member_id UUID
+
+  indexes {
+    (schedule_id, member_id) [pk]
+  }
+}
+
+Ref: ClassRegistrations.schedule_id > Schedule.schedule_id
+Ref: ClassRegistrations.member_id > Members.member_id
+
+
+// ======================================================
+// TRAINERS
+// ======================================================
+
+Table Trainers {
+  trainer_id INTEGER [pk]
+  first_name VARCHAR(15)
+  last_name VARCHAR(25)
+  trainer_availability VARCHAR(15)
+}
+
+Table Specializations {
+  specialization_id INTEGER [pk]
+  name_specialization VARCHAR(20)
+}
+
+Table TrainerClasses {
+
+  class_id INTEGER
+  trainer_id INTEGER
+
+  indexes {
+    (class_id, trainer_id) [pk]
+  }
+}
+
+Ref: TrainerClasses.class_id > Classes.class_id
+Ref: TrainerClasses.trainer_id > Trainers.trainer_id
+
+
+Table TrainerSpecializations {
+
+  trainer_id INTEGER
+  specialization_id INTEGER
+
+  indexes {
+    (trainer_id, specialization_id) [pk]
+  }
+}
+
+Ref: TrainerSpecializations.trainer_id > Trainers.trainer_id
+Ref: TrainerSpecializations.specialization_id > Specializations.specialization_id
+
+
+// ======================================================
+// EQUIPMENT
+// ======================================================
+
+Table Equipment {
+  equipment_id INTEGER [pk]
+
+  room_id INTEGER
+
+  name_equipment VARCHAR(15)
+  status_equipment VARCHAR(10)
+}
+
+Ref: Equipment.room_id > Rooms.room_id
