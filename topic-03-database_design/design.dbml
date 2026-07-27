@@ -36,208 +36,178 @@
 
 
 // Вставте ваш DBML-код нижче 👇
-// ======================================================
-// MEMBERS
-// ======================================================
 
-Table Memberships {
-  membership_id INTEGER [pk]
-  type_membership VARCHAR(15)
-  price_membership NUMERIC(4)
+// -----------------------------------------------------------------------------
+// ENUM TYPES
+// -----------------------------------------------------------------------------
+
+Enum day_of_week_enum {
+  "1"
+  "2"
+  "3"
+  "4"
+  "5"
+  "6"
+  "7"
 }
 
-Table Members {
-  member_id UUID [pk]
-  first_name VARCHAR(15)
-  last_name VARCHAR(25)
-  phone_number VARCHAR(20)
-  date_registration TIMESTAMP [not null]
+Enum equipment_status_enum {
+  "Доступний"
+  "У ремонті"
+  "Виведений з експлуатації"
 }
 
-Table Subscriptions {
-  subscription_id INTEGER [pk]
+// -----------------------------------------------------------------------------
+// 1. НЕЗАЛЕЖНІ (БАТЬКІВСЬКІ) ТАБЛИЦІ
+// -----------------------------------------------------------------------------
 
-  member_id UUID
-  membership_id INTEGER
+Table members {
+  member_id uuid [pk, default: `gen_random_uuid()`]
+  first_name varchar(15) [not null]
+  last_name varchar(25) [not null]
+  phone_number varchar(20) [unique, not null]
+  date_registration timestamp [not null, default: `NOW()`]
 
-  start_date DATE [not null]
-  end_date DATE [not null]
-}
-
-Ref: Subscriptions.member_id > Members.member_id
-Ref: Subscriptions.membership_id > Memberships.membership_id
-
-
-Table Attendances {
-  attendance_id BIGINT [pk]
-
-  member_id UUID
-
-  check_in_datetime TIMESTAMP [not null]
-  check_out_datetime TIMESTAMP [not null]
-}
-
-Ref: Attendances.member_id > Members.member_id
-
-
-Table Progress {
-  progress_id INTEGER [pk]
-
-  member_id UUID
-
-  fitness_goals VARCHAR(200) [not null]
-  progress_metrics VARCHAR(150)
-  goal_achievement_date DATE
-}
-
-Ref: Progress.member_id > Members.member_id
-
-
-// ======================================================
-// PERSONAL TRAINING
-// ======================================================
-
-Table PersonalTrainingSessions {
-
-  member_id UUID
-  trainer_id INTEGER
-
-  start_datetime TIMESTAMP [not null]
-  end_datetime TIMESTAMP [not null]
-
-  indexes {
-    (member_id, trainer_id, start_datetime) [pk]
+  Indexes {
+    phone_number [name: 'idx_members_phone']
   }
 }
 
-Ref: PersonalTrainingSessions.member_id > Members.member_id
-Ref: PersonalTrainingSessions.trainer_id > Trainers.trainer_id
+Table memberships {
+  membership_id integer [pk, increment]
+  type_membership varchar(15) [not null]
+  price_membership numeric(4) [not null, note: 'CHECK (price_membership >= 0)']
+}
 
+Table classes {
+  class_id integer [pk, increment]
+  name_class varchar(100) [not null]
+}
 
-Table Locations {
+Table trainers {
+  trainer_id integer [pk, increment]
+  first_name varchar(15) [not null]
+  last_name varchar(25) [not null]
+  trainer_availability varchar(15)
+}
 
-  member_id UUID
-  room_id INTEGER
+Table specializations {
+  specialization_id integer [pk, increment]
+  name_specialization varchar(20) [not null]
+}
 
-  start_datetime TIMESTAMP [not null]
-  end_datetime TIMESTAMP
+Table rooms {
+  room_id integer [pk, increment]
+  name_room varchar(100) [not null]
+  capacity smallint [not null, note: 'CHECK (capacity > 0)']
+}
 
-  indexes {
-    (member_id, room_id, start_datetime) [pk]
+// -----------------------------------------------------------------------------
+// 2. ЗАЛЕЖНІ (ДОЧІРНІ) ТАБЛИЦІ
+// -----------------------------------------------------------------------------
+
+Table subscriptions {
+  subscription_id integer [pk, increment]
+  member_id uuid [ref: > members.member_id]
+  membership_id integer [ref: > memberships.membership_id]
+  start_date date [not null]
+  end_date date [not null]
+
+  Indexes {
+    member_id [name: 'idx_subscriptions_member']
   }
 }
 
-Ref: Locations.member_id > Members.member_id
-Ref: Locations.room_id > Rooms.room_id
+Table schedule {
+  schedule_id integer [pk, increment]
+  room_id integer [ref: > rooms.room_id]
+  class_id integer [ref: > classes.class_id]
+  trainer_id integer [ref: > trainers.trainer_id]
+  date_schedule date [default: null]
+  day_of_week day_of_week_enum [default: null]
+  start_time time [not null]
+  end_time time
 
-
-// ======================================================
-// SCHEDULE
-// ======================================================
-
-Table Rooms {
-  room_id INTEGER [pk]
-  name_room VARCHAR(100)
-  capacity SMALLINT
+  Indexes {
+    (date_schedule, day_of_week) [name: 'idx_schedule_lookup']
+  }
 }
 
-Table Classes {
-  class_id INTEGER [pk]
-  name_class VARCHAR(100)
+Table attendances {
+  attendance_id bigint [pk, increment]
+  member_id uuid [ref: > members.member_id]
+  check_in_datetime timestamp [not null]
+  check_out_datetime timestamp [not null]
+
+  Indexes {
+    member_id [name: 'idx_attendances_member']
+  }
 }
 
-Table Schedule {
-  schedule_id INTEGER [pk]
-
-  room_id INTEGER
-  class_id INTEGER
-  trainer_id INTEGER
-
-  date_schedule DATE
-  day_of_week SMALLINT [not null, note: '1..7']
-
-  start_time TIME [not null]
-  end_time TIME
-
-  Note: '''
-  CHECK (day_of_week BETWEEN 1 AND 7)
-  '''
+Table progress {
+  progress_id integer [pk, increment]
+  member_id uuid [ref: > members.member_id]
+  fitness_goals varchar(200) [not null]
+  progress_metrics varchar(150)
+  goal_achievement_date date [default: null]
 }
 
-Ref: Schedule.room_id > Rooms.room_id
-Ref: Schedule.class_id > Classes.class_id
-Ref: Schedule.trainer_id > Trainers.trainer_id
+Table equipment {
+  equipment_id integer [pk, increment]
+  room_id integer [ref: > rooms.room_id]
+  name_equipment varchar(15) [not null]
+  status_equipment equipment_status_enum [not null, default: 'Доступний']
+}
 
+// -----------------------------------------------------------------------------
+// 3. ПРОМІЖНІ ТАБЛИЦІ (MANY-TO-MANY)
+// -----------------------------------------------------------------------------
 
-Table ClassRegistrations {
+Table class_registrations {
+  schedule_id integer [ref: > schedule.schedule_id]
+  member_id uuid [ref: > members.member_id]
 
-  schedule_id INTEGER
-  member_id UUID
-
-  indexes {
+  Indexes {
     (schedule_id, member_id) [pk]
   }
 }
 
-Ref: ClassRegistrations.schedule_id > Schedule.schedule_id
-Ref: ClassRegistrations.member_id > Members.member_id
+Table trainer_classes {
+  class_id integer [ref: > classes.class_id]
+  trainer_id integer [ref: > trainers.trainer_id]
 
-
-// ======================================================
-// TRAINERS
-// ======================================================
-
-Table Trainers {
-  trainer_id INTEGER [pk]
-  first_name VARCHAR(15)
-  last_name VARCHAR(25)
-  trainer_availability VARCHAR(15)
-}
-
-Table Specializations {
-  specialization_id INTEGER [pk]
-  name_specialization VARCHAR(20)
-}
-
-Table TrainerClasses {
-
-  class_id INTEGER
-  trainer_id INTEGER
-
-  indexes {
+  Indexes {
     (class_id, trainer_id) [pk]
   }
 }
 
-Ref: TrainerClasses.class_id > Classes.class_id
-Ref: TrainerClasses.trainer_id > Trainers.trainer_id
+Table trainer_specializations {
+  trainer_id integer [ref: > trainers.trainer_id]
+  specialization_id integer [ref: > specializations.specialization_id]
 
-
-Table TrainerSpecializations {
-
-  trainer_id INTEGER
-  specialization_id INTEGER
-
-  indexes {
+  Indexes {
     (trainer_id, specialization_id) [pk]
   }
 }
 
-Ref: TrainerSpecializations.trainer_id > Trainers.trainer_id
-Ref: TrainerSpecializations.specialization_id > Specializations.specialization_id
+Table personal_training_sessions {
+  member_id uuid [ref: > members.member_id]
+  trainer_id integer [ref: > trainers.trainer_id]
+  start_datetime timestamp [not null]
+  end_datetime timestamp [not null]
 
-
-// ======================================================
-// EQUIPMENT
-// ======================================================
-
-Table Equipment {
-  equipment_id INTEGER [pk]
-
-  room_id INTEGER
-
-  name_equipment VARCHAR(15)
-  status_equipment VARCHAR(10)
+  Indexes {
+    (member_id, trainer_id, start_datetime) [pk]
+  }
 }
 
-Ref: Equipment.room_id > Rooms.room_id
+Table locations {
+  member_id uuid [ref: > members.member_id]
+  room_id integer [ref: > rooms.room_id]
+  start_datetime timestamp [not null]
+  end_datetime timestamp [default: null]
+
+  Indexes {
+    (member_id, room_id, start_datetime) [pk]
+  }
+}
