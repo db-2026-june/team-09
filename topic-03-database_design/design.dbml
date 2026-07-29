@@ -57,6 +57,13 @@ Enum equipment_status_enum {
   "Виведений з експлуатації"
 }
 
+Enum trainer_availability_enum {
+   'Доступний',
+   'Зайнятий',
+    'У відпустці',
+    'Недоступний'
+}
+
 // -----------------------------------------------------------------------------
 // 1. НЕЗАЛЕЖНІ (БАТЬКІВСЬКІ) ТАБЛИЦІ
 // -----------------------------------------------------------------------------
@@ -88,7 +95,7 @@ Table trainers {
   trainer_id integer [pk, increment]
   first_name varchar(15) [not null]
   last_name varchar(25) [not null]
-  trainer_availability varchar(15)
+  trainer_availability trainer_availability_enum [not null, default: 'Доступний']
 }
 
 Table specializations {
