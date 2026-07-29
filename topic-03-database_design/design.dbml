@@ -64,6 +64,12 @@ Enum trainer_availability_enum {
     'Недоступний'
 }
 
+Enum membership_type_enum {
+  'Місячний',
+  'Річний',
+  'Преміум'
+}
+
 // -----------------------------------------------------------------------------
 // 1. НЕЗАЛЕЖНІ (БАТЬКІВСЬКІ) ТАБЛИЦІ
 // -----------------------------------------------------------------------------
@@ -82,7 +88,7 @@ Table members {
 
 Table memberships {
   membership_id integer [pk, increment]
-  type_membership varchar(15) [not null]
+  type_membership membership_type_enum [not null]
   price_membership numeric(4) [not null, note: 'CHECK (price_membership >= 0)']
 }
 
