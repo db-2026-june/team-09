@@ -106,7 +106,7 @@ Table trainers {
 
 Table specializations {
   specialization_id integer [pk, increment]
-  name_specialization varchar(20) [not null]
+  name_specialization varchar(50) [not null]
 }
 
 Table rooms {
