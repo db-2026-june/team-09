@@ -42,32 +42,32 @@
 // -----------------------------------------------------------------------------
 
 Enum day_of_week_enum {
-  "1"
-  "2"
-  "3"
-  "4"
-  "5"
-  "6"
-  "7"
+  "monday"
+  "tuesday"
+  "wednesday"
+  "thursday"
+  "friday"
+  "saturday"
+  "sunday"
 }
 
 Enum equipment_status_enum {
-  "Доступний"
-  "У ремонті"
-  "Виведений з експлуатації"
+  "available"
+  "under repair"
+  "decommissioned"
 }
 
 Enum trainer_availability_enum {
-   'Доступний',
-   'Зайнятий',
-    'У відпустці',
-    'Недоступний'
+   'available',
+   'busy',
+    'on leave',
+    'unavailable'
 }
 
 Enum membership_type_enum {
-  'Місячний',
-  'Річний',
-  'Преміум'
+  'monthly',
+  'yearly',
+  'premium'
 }
 
 // -----------------------------------------------------------------------------
@@ -78,7 +78,7 @@ Table members {
   member_id uuid [pk, default: `gen_random_uuid()`]
   first_name varchar(15) [not null]
   last_name varchar(25) [not null]
-  phone_number varchar(20) [unique, not null]
+  phone_number bigint [unique, not null]
   date_registration timestamp [not null, default: `NOW()`]
 
   Indexes {
@@ -101,7 +101,7 @@ Table trainers {
   trainer_id integer [pk, increment]
   first_name varchar(15) [not null]
   last_name varchar(25) [not null]
-  trainer_availability trainer_availability_enum [not null, default: 'Доступний']
+  trainer_availability trainer_availability_enum [not null, default: 'available']
 }
 
 Table specializations {
@@ -168,8 +168,8 @@ Table progress {
 Table equipment {
   equipment_id integer [pk, increment]
   room_id integer [ref: > rooms.room_id]
-  name_equipment varchar(15) [not null]
-  status_equipment equipment_status_enum [not null, default: 'Доступний']
+  name_equipment varchar(50) [not null]
+  status_equipment equipment_status_enum [not null, default: 'available']
 }
 
 // -----------------------------------------------------------------------------
