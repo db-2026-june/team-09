@@ -191,16 +191,25 @@ INSERT INTO fitness_center.schedule (room_id, class_id, trainer_id, date_schedul
 
 -- 3.3. Attendances (Облік відвідуваності) — 10 записів
 INSERT INTO fitness_center.attendances (member_id, check_in_datetime, check_out_datetime) VALUES
-((SELECT member_id FROM fitness_center.members WHERE phone_number = 380671234501), NOW() - INTERVAL '2 hours', NOW() - INTERVAL '30 minutes'),
-((SELECT member_id FROM fitness_center.members WHERE phone_number = 380671234502), NOW() - INTERVAL '1 day',   NOW() - INTERVAL '1 day' + INTERVAL '1.5 hours'),
-((SELECT member_id FROM fitness_center.members WHERE phone_number = 380671234503), NOW() - INTERVAL '3 hours', NOW() - INTERVAL '1 hour'),
-((SELECT member_id FROM fitness_center.members WHERE phone_number = 380671234504), NOW() - INTERVAL '2 days',  NOW() - INTERVAL '2 days' + INTERVAL '2 hours'),
+--1-й візит: НЕЗАВЕРШЕНИЙ (клієнт зараз у залі)
+((SELECT member_id FROM fitness_center.members WHERE phone_number = 380671234501), NOW() - INTERVAL '1 hour', NULL),
+
+-- 2-й візит: Завершений
+((SELECT member_id FROM fitness_center.members WHERE phone_number = 380671234502), NOW() - INTERVAL '1 day', NOW() - INTERVAL '1 day' + INTERVAL '1.5 hours'),
+
+-- 3-й візит: НЕЗАВЕРШЕНИЙ (клієнт зараз у залі)
+((SELECT member_id FROM fitness_center.members WHERE phone_number = 380671234503), NOW() - INTERVAL '45 minutes', NULL),
+
+-- Завершені візити
+((SELECT member_id FROM fitness_center.members WHERE phone_number = 380671234504), NOW() - INTERVAL '2 days', NOW() - INTERVAL '2 days' + INTERVAL '2 hours'),
 ((SELECT member_id FROM fitness_center.members WHERE phone_number = 380671234505), NOW() - INTERVAL '4 hours', NOW() - INTERVAL '2 hours'),
-((SELECT member_id FROM fitness_center.members WHERE phone_number = 380671234506), NOW() - INTERVAL '3 days',  NOW() - INTERVAL '3 days' + INTERVAL '1 hour'),
+((SELECT member_id FROM fitness_center.members WHERE phone_number = 380671234506), NOW() - INTERVAL '3 days', NOW() - INTERVAL '3 days' + INTERVAL '1 hour'),
 ((SELECT member_id FROM fitness_center.members WHERE phone_number = 380671234507), NOW() - INTERVAL '5 hours', NOW() - INTERVAL '4 hours'),
-((SELECT member_id FROM fitness_center.members WHERE phone_number = 380671234508), NOW() - INTERVAL '4 days',  NOW() - INTERVAL '4 days' + INTERVAL '1.5 hours'),
+((SELECT member_id FROM fitness_center.members WHERE phone_number = 380671234508), NOW() - INTERVAL '4 days', NOW() - INTERVAL '4 days' + INTERVAL '1.5 hours'),
 ((SELECT member_id FROM fitness_center.members WHERE phone_number = 380671234509), NOW() - INTERVAL '6 hours', NOW() - INTERVAL '5 hours'),
-((SELECT member_id FROM fitness_center.members WHERE phone_number = 380671234510), NOW() - INTERVAL '5 days',  NOW() - INTERVAL '5 days' + INTERVAL '2 hours');
+
+-- 10-й візит: НЕЗАВЕРШЕНИЙ
+((SELECT member_id FROM fitness_center.members WHERE phone_number = 380671234510), NOW() - INTERVAL '20 minutes', NULL);
 
 
 

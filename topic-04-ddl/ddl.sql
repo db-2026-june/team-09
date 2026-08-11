@@ -134,8 +134,6 @@ CREATE TABLE fitness_center.attendances (
   member_id uuid REFERENCES fitness_center.members(member_id) ON DELETE CASCADE,
   check_in_datetime timestamp NOT NULL,
   check_out_datetime timestamp DEFAULT NULL,
-  
-  CHECK (check_out_datetime >= check_in_datetime)
 );
 
 -- 1.13. Таблиця Progress (Прогрес та цілі) — [Final]
