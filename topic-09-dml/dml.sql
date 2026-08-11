@@ -189,18 +189,22 @@ INSERT INTO fitness_center.schedule (room_id, class_id, trainer_id, date_schedul
 
 
 
--- 3.3. Attendances (Облік відвідуваності) — 10 записів
+-- 3.3. Attendances (Облік відвідуваності)
 INSERT INTO fitness_center.attendances (member_id, check_in_datetime, check_out_datetime) VALUES
---1-й візит: НЕЗАВЕРШЕНИЙ (клієнт зараз у залі)
+-- 1-й візит: НЕЗАВЕРШЕНИЙ (клієнт зараз у залі)
 ((SELECT member_id FROM fitness_center.members WHERE phone_number = 380671234501), NOW() - INTERVAL '1 hour', NULL),
 
--- 2-й візит: Завершений
-((SELECT member_id FROM fitness_center.members WHERE phone_number = 380671234502), NOW() - INTERVAL '1 day', NOW() - INTERVAL '1 day' + INTERVAL '1.5 hours'),
+-- 5 візитів для клієнта 380671234502 (кожні 5 днів)
+((SELECT member_id FROM fitness_center.members WHERE phone_number = 380671234502), NOW() - INTERVAL '21 days', NOW() - INTERVAL '21 days' + INTERVAL '1.5 hours'),
+((SELECT member_id FROM fitness_center.members WHERE phone_number = 380671234502), NOW() - INTERVAL '16 days', NOW() - INTERVAL '16 days' + INTERVAL '1.5 hours'),
+((SELECT member_id FROM fitness_center.members WHERE phone_number = 380671234502), NOW() - INTERVAL '11 days', NOW() - INTERVAL '11 days' + INTERVAL '2 hours'),
+((SELECT member_id FROM fitness_center.members WHERE phone_number = 380671234502), NOW() - INTERVAL '6 days',  NOW() - INTERVAL '6 days'  + INTERVAL '1.5 hours'),
+((SELECT member_id FROM fitness_center.members WHERE phone_number = 380671234502), NOW() - INTERVAL '1 day',   NOW() - INTERVAL '1 day'   + INTERVAL '1.5 hours'),
 
 -- 3-й візит: НЕЗАВЕРШЕНИЙ (клієнт зараз у залі)
 ((SELECT member_id FROM fitness_center.members WHERE phone_number = 380671234503), NOW() - INTERVAL '45 minutes', NULL),
 
--- Завершені візити
+-- Завершене відвідування для інших клієнтів
 ((SELECT member_id FROM fitness_center.members WHERE phone_number = 380671234504), NOW() - INTERVAL '2 days', NOW() - INTERVAL '2 days' + INTERVAL '2 hours'),
 ((SELECT member_id FROM fitness_center.members WHERE phone_number = 380671234505), NOW() - INTERVAL '4 hours', NOW() - INTERVAL '2 hours'),
 ((SELECT member_id FROM fitness_center.members WHERE phone_number = 380671234506), NOW() - INTERVAL '3 days', NOW() - INTERVAL '3 days' + INTERVAL '1 hour'),
