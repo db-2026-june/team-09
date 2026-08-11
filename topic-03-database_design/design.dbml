@@ -150,7 +150,7 @@ Table attendances {
   attendance_id bigint [pk, increment]
   member_id uuid [ref: > members.member_id]
   check_in_datetime timestamp [not null]
-  check_out_datetime timestamp [not null]
+  check_out_datetime timestamp [default: null]
 
   Indexes {
     member_id [name: 'idx_attendances_member']
